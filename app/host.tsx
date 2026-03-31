@@ -6,6 +6,7 @@ import {
   ScrollView,
   Animated,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useGame } from '../src/store/GameContext';
 import NumberBoard from '../src/components/NumberBoard';
@@ -45,6 +46,7 @@ export default function HostScreen() {
   };
 
   return (
+    <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <GameAlert {...alertState} onClose={hideAlert} />
       {/* Current Number Display */}
@@ -156,6 +158,7 @@ export default function HostScreen() {
 
       <View style={{ height: 40 }} />
     </ScrollView>
+    </SafeAreaView>
   );
 }
 

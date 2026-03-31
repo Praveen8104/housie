@@ -5,6 +5,7 @@ import {
   ScrollView,
   RefreshControl,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../src/store/AuthContext';
 import { useTheme, ThemeColors } from '../src/store/ThemeContext';
@@ -60,6 +61,7 @@ export default function WalletScreen() {
   };
 
   return (
+    <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
     <ScrollView
       style={styles.container}
       contentContainerStyle={styles.content}
@@ -110,6 +112,7 @@ export default function WalletScreen() {
 
       <View style={{ height: 40 }} />
     </ScrollView>
+    </SafeAreaView>
   );
 }
 

@@ -5,6 +5,7 @@ import {
   TouchableOpacity,
   ScrollView,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useGame } from '../src/store/GameContext';
 import { useTheme, ThemeColors } from '../src/store/ThemeContext';
@@ -28,6 +29,7 @@ export default function ScoreboardScreen() {
   const totalClaimed = CLAIM_ORDER.filter(t => state.claims[t] !== null).length;
 
   return (
+    <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <Text style={styles.title}>
         {state.gameOver ? 'Game Over!' : 'Scoreboard'}
@@ -111,6 +113,7 @@ export default function ScoreboardScreen() {
 
       <View style={{ height: 40 }} />
     </ScrollView>
+    </SafeAreaView>
   );
 }
 

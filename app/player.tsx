@@ -4,6 +4,7 @@ import {
   Text,
   ScrollView,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useGame } from '../src/store/GameContext';
 import TicketView from '../src/components/TicketView';
@@ -29,9 +30,9 @@ export default function PlayerScreen() {
   const player = state.players[playerIndex];
   if (!player) {
     return (
-      <View style={styles.container}>
+      <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
         <Text style={styles.errorText}>Player not found</Text>
-      </View>
+      </SafeAreaView>
     );
   }
 
@@ -66,7 +67,7 @@ export default function PlayerScreen() {
   };
 
   return (
-    <View style={styles.outerContainer}>
+    <SafeAreaView style={styles.outerContainer} edges={['top', 'left', 'right']}>
     <Confetti visible={showConfetti} onComplete={() => setShowConfetti(false)} />
     <GameAlert {...alertState} onClose={hideAlert} />
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
@@ -139,7 +140,7 @@ export default function PlayerScreen() {
 
       <View style={{ height: 40 }} />
     </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 }
 

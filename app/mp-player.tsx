@@ -7,6 +7,7 @@ import {
   Alert,
   Switch,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useTheme, ThemeColors } from '../src/store/ThemeContext';
 import { useThemedStyles } from '../src/hooks/useStyles';
@@ -165,10 +166,22 @@ export default function MpPlayerScreen() {
     }
   }, [room?.status]);
 
-  if (!room || !playerName) return <View style={styles.outer}><Text style={styles.loadingText}>Loading...</Text></View>;
+  if (!room || !playerName) {
+    return (
+      <SafeAreaView style={styles.outer} edges={['top', 'left', 'right']}>
+        <Text style={styles.loadingText}>Loading...</Text>
+      </SafeAreaView>
+    );
+  }
 
   const player = room.players?.[playerName];
-  if (!player) return <View style={styles.outer}><Text style={styles.loadingText}>Player not found</Text></View>;
+  if (!player) {
+    return (
+      <SafeAreaView style={styles.outer} edges={['top', 'left', 'right']}>
+        <Text style={styles.loadingText}>Player not found</Text>
+      </SafeAreaView>
+    );
+  }
 
   const calledNumbers = safeArray(room.calledNumbers);
   const calledSet = new Set(calledNumbers);
@@ -246,7 +259,7 @@ export default function MpPlayerScreen() {
   };
 
   return (
-    <View style={styles.outer}>
+    <SafeAreaView style={styles.outer} edges={['top', 'left', 'right']}>
     <Confetti visible={showConfetti} onComplete={() => setShowConfetti(false)} />
     {roomCode && <ReactionOverlay roomCode={roomCode} />}
     <GameAlert {...alertState} onClose={hideAlert} />
@@ -360,7 +373,7 @@ export default function MpPlayerScreen() {
 
       <View style={{ height: 40 }} />
     </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 }
 

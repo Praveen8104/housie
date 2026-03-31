@@ -9,6 +9,7 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { PRIZE_DISTRIBUTION } from '../src/constants/theme';
@@ -179,6 +180,7 @@ export default function LobbyScreen() {
   const getDisplayAmount = (key: string) => currentAmounts?.[key] ?? getDefaultAmount(key);
 
   return (
+    <SafeAreaView style={styles.outerContainer} edges={['top', 'left', 'right']}>
     <KeyboardAvoidingView style={styles.outerContainer} behavior={Platform.OS === 'ios' ? 'padding' : 'height'} keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}>
     <ScrollView ref={scrollRef} style={styles.container} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
       <GameAlert {...alertState} onClose={hideAlert} />
@@ -434,6 +436,7 @@ export default function LobbyScreen() {
       <View style={{ height: 30 }} />
     </ScrollView>
     </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
 

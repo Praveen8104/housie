@@ -11,6 +11,7 @@ import {
 import { useRouter } from 'expo-router';
 import * as Linking from 'expo-linking';
 import { Ionicons } from '@expo/vector-icons';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme, ThemeColors } from '../src/store/ThemeContext';
 import { useThemedStyles } from '../src/hooks/useStyles';
 import { createRoom, joinRoom } from '../src/firebase/roomService';
@@ -73,7 +74,8 @@ export default function MultiplayerScreen() {
   };
 
   return (
-    <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : 'height'} keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}>
+    <SafeAreaView style={styles.container} edges={["top", "left", "right"]}>
+      <KeyboardAvoidingView style={styles.keyboardContainer} behavior={Platform.OS === 'ios' ? 'padding' : 'height'} keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}>
       <GameAlert {...alertState} onClose={hideAlert} />
       <ScrollView ref={scrollRef} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
 
@@ -147,12 +149,14 @@ export default function MultiplayerScreen() {
 
         <View style={{ height: 120 }} />
       </ScrollView>
-    </KeyboardAvoidingView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
 
 const makeStyles = (colors: ThemeColors) => ({
   container: { flex: 1, backgroundColor: colors.background } as const,
+  keyboardContainer: { flex: 1 } as const,
   content: { padding: 16, paddingTop: 12 } as const,
   card: { backgroundColor: colors.surface, borderRadius: 16, padding: 16, marginBottom: 14 } as const,
   sectionHeader: { flexDirection: 'row' as const, alignItems: 'center' as const, gap: 8, marginBottom: 14 } as const,

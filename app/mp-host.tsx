@@ -7,6 +7,7 @@ import {
   Animated,
   Switch,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { PRIZE_DISTRIBUTION } from '../src/constants/theme';
 import { useTheme, ThemeColors } from '../src/store/ThemeContext';
@@ -249,7 +250,13 @@ export default function MpHostScreen() {
     } catch (err: any) { showAlert('Error', err.message, 'error'); }
   };
 
-  if (!room) return <View style={styles.outer}><Text style={styles.loadingText}>Loading...</Text></View>;
+  if (!room) {
+    return (
+      <SafeAreaView style={styles.outer} edges={['top', 'left', 'right']}>
+        <Text style={styles.loadingText}>Loading...</Text>
+      </SafeAreaView>
+    );
+  }
 
   const calledNumbers = safeArray(room.calledNumbers);
   const calledSet = new Set(calledNumbers);
@@ -263,7 +270,7 @@ export default function MpHostScreen() {
   const hostColor = PLAYER_COLORS[hostIndex % PLAYER_COLORS.length];
 
   return (
-    <View style={styles.outer}>
+    <SafeAreaView style={styles.outer} edges={['top', 'left', 'right']}>
     <Confetti visible={showConfetti} onComplete={() => setShowConfetti(false)} />
     {roomCode && <ReactionOverlay roomCode={roomCode} />}
     <GameAlert {...alertState} onClose={hideAlert} />
@@ -457,7 +464,7 @@ export default function MpHostScreen() {
 
       <View style={{ height: 40 }} />
     </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 }
 

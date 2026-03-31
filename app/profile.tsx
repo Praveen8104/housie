@@ -9,6 +9,7 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../src/store/AuthContext';
@@ -83,6 +84,7 @@ export default function ProfileScreen() {
 
   return (
     <>
+    <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <GameAlert {...alertState} onClose={hideAlert} />
 
@@ -183,6 +185,7 @@ export default function ProfileScreen() {
 
       <View style={{ height: 40 }} />
     </ScrollView>
+    </SafeAreaView>
 
     {/* Edit modal */}
     <Modal visible={!!editField} transparent animationType="fade" onRequestClose={cancelEdit}>

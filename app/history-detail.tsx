@@ -4,6 +4,7 @@ import {
   Text,
   ScrollView,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme, ThemeColors } from '../src/store/ThemeContext';
@@ -56,6 +57,7 @@ export default function HistoryDetailScreen() {
   });
 
   return (
+    <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       {/* Header */}
       <View style={styles.headerCard}>
@@ -198,6 +200,7 @@ export default function HistoryDetailScreen() {
 
       <View style={{ height: 40 }} />
     </ScrollView>
+    </SafeAreaView>
   );
 }
 

@@ -6,6 +6,7 @@ import {
   ScrollView,
   RefreshControl,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useTheme, ThemeColors } from '../src/store/ThemeContext';
 import { useThemedStyles } from '../src/hooks/useStyles';
@@ -71,17 +72,18 @@ export default function HistoryScreen() {
 
   if (history.length === 0) {
     return (
-      <View style={[styles.container, styles.emptyContainer]}>
+      <SafeAreaView style={[styles.container, styles.emptyContainer]} edges={['top', 'left', 'right']}>
         <Ionicons name="clipboard-outline" size={48} color={colors.textSecondary} style={{ marginBottom: 16 }} />
         <Text style={styles.emptyTitle}>No Games Yet</Text>
         <Text style={styles.emptyText}>
           Your multiplayer game history will appear here.
         </Text>
-      </View>
+      </SafeAreaView>
     );
   }
 
   return (
+    <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
     <ScrollView
       style={styles.container}
       contentContainerStyle={styles.content}
@@ -138,6 +140,7 @@ export default function HistoryScreen() {
 
       <View style={{ height: 40 }} />
     </ScrollView>
+    </SafeAreaView>
   );
 }
 

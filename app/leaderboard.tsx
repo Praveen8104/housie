@@ -5,6 +5,7 @@ import {
   ScrollView,
   RefreshControl,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme, ThemeColors } from '../src/store/ThemeContext';
 import { useThemedStyles } from '../src/hooks/useStyles';
 import { getGameHistory, GameHistoryEntry } from '../src/utils/storage';
@@ -73,15 +74,16 @@ export default function LeaderboardScreen() {
 
   if (leaderboard.length === 0) {
     return (
-      <View style={[styles.container, styles.emptyContainer]}>
+      <SafeAreaView style={[styles.container, styles.emptyContainer]} edges={['top', 'left', 'right']}>
         <Ionicons name="trophy-outline" size={48} color={colors.textSecondary} style={{ marginBottom: 16 }} />
         <Text style={styles.emptyTitle}>No Data Yet</Text>
         <Text style={styles.emptyText}>Play some multiplayer games to see the leaderboard.</Text>
-      </View>
+      </SafeAreaView>
     );
   }
 
   return (
+    <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
     <ScrollView
       style={styles.container}
       contentContainerStyle={styles.content}
@@ -126,6 +128,7 @@ export default function LeaderboardScreen() {
 
       <View style={{ height: 40 }} />
     </ScrollView>
+    </SafeAreaView>
   );
 }
 
