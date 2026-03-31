@@ -1,12 +1,14 @@
 import React from 'react';
 import { ActivityIndicator, BackHandler, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Stack, useRouter, useSegments } from 'expo-router';
+import * as Linking from 'expo-linking';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import * as Updates from 'expo-updates';
 import { GameProvider } from '../src/store/GameContext';
 import { ThemeProvider, useTheme } from '../src/store/ThemeContext';
 import { AuthProvider, useAuth } from '../src/store/AuthContext';
+import { joinRoom } from '../src/firebase/roomService';
 
 type UpdateGatePhase =
   | 'checking'
@@ -128,9 +130,50 @@ function ForceUpdateGate({ children }: { children: React.ReactNode }) {
 }
 
 function AuthGate({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { user, isAuthenticated, isLoading } = useAuth();
   const segments = useSegments();
   const router = useRouter();
+  const lastInviteRouteRef = React.useRef<string | null>(null);
+
+  const getInvitePayloadFromUrl = React.useCallback((url: string) => {
+    try {
+      const parsed = Linking.parse(url);
+      const qp = (parsed.queryParams || {}) as Record<string, unknown>;
+      const roomFromQuery = String(qp.room || qp.code || '').trim().toUpperCase();
+      const autoRawQuery = String(qp.autoJoin || qp.autojoin || qp.auto_join || '').trim().toLowerCase();
+      const autoJoinFromQuery = autoRawQuery ? (autoRawQuery === '1' || autoRawQuery === 'true' || autoRawQuery === 'yes') : true;
+      const path = (parsed.path || '').replace(/^\/+/, '').toLowerCase();
+
+      if (roomFromQuery && (path === 'multiplayer' || path.endsWith('/multiplayer') || path === '')) {
+        return {
+          roomCode: roomFromQuery,
+          autoJoin: autoJoinFromQuery,
+          route: `/multiplayer?room=${encodeURIComponent(roomFromQuery)}&autoJoin=${autoJoinFromQuery ? '1' : '0'}`,
+        };
+      }
+
+      const nativeUrl = new URL(url);
+      const roomFromSearch = (nativeUrl.searchParams.get('room') || nativeUrl.searchParams.get('code') || '').trim().toUpperCase();
+      const autoRawSearch = (
+        nativeUrl.searchParams.get('autoJoin') ||
+        nativeUrl.searchParams.get('autojoin') ||
+        nativeUrl.searchParams.get('auto_join') ||
+        ''
+      ).trim().toLowerCase();
+      const autoJoinFromSearch = autoRawSearch ? (autoRawSearch === '1' || autoRawSearch === 'true' || autoRawSearch === 'yes') : true;
+      const normalizedPath = nativeUrl.pathname.replace(/^\/+/, '').toLowerCase();
+
+      if (roomFromSearch && (normalizedPath === 'multiplayer' || normalizedPath.endsWith('/multiplayer'))) {
+        return {
+          roomCode: roomFromSearch,
+          autoJoin: autoJoinFromSearch,
+          route: `/multiplayer?room=${encodeURIComponent(roomFromSearch)}&autoJoin=${autoJoinFromSearch ? '1' : '0'}`,
+        };
+      }
+    } catch {}
+
+    return null;
+  }, []);
 
   React.useEffect(() => {
     if (isLoading) return;
@@ -142,6 +185,38 @@ function AuthGate({ children }: { children: React.ReactNode }) {
       router.replace('/');
     }
   }, [isAuthenticated, isLoading, segments]);
+
+  React.useEffect(() => {
+    if (isLoading || !isAuthenticated) return;
+
+    const maybeRouteFromUrl = async (url: string) => {
+      const invitePayload = getInvitePayloadFromUrl(url);
+      if (!invitePayload || lastInviteRouteRef.current === invitePayload.route) return;
+      lastInviteRouteRef.current = invitePayload.route;
+
+      if (invitePayload.autoJoin && user?.name) {
+        try {
+          await joinRoom(invitePayload.roomCode, user.name, 1);
+          router.replace(
+            `/lobby?roomCode=${encodeURIComponent(invitePayload.roomCode)}&playerName=${encodeURIComponent(user.name)}&isHost=false`
+          );
+          return;
+        } catch {}
+      }
+
+      router.replace(invitePayload.route);
+    };
+
+    Linking.getInitialURL().then((url) => {
+      if (url) void maybeRouteFromUrl(url);
+    });
+
+    const sub = Linking.addEventListener('url', ({ url }) => {
+      void maybeRouteFromUrl(url);
+    });
+
+    return () => sub.remove();
+  }, [isLoading, isAuthenticated, getInvitePayloadFromUrl, router, user]);
 
   if (isLoading) {
     return (
@@ -161,34 +236,26 @@ function AppStack() {
       <StatusBar style={mode === 'dark' ? 'light' : 'dark'} translucent={false} backgroundColor={colors.background} />
       <Stack
         screenOptions={{
-          headerStyle: { backgroundColor: colors.background },
-          headerTintColor: colors.text,
-          headerTitleStyle: { fontWeight: '700' },
+          headerShown: false,
           contentStyle: { backgroundColor: colors.background },
-          // 1. Change to 'slide_from_right' (much smoother cross-platform) or 'default'
           animation: 'slide_from_right', 
-          // 2. REMOVED animationDuration to let the native driver handle frame timing smoothly
         }}
       >
-        <Stack.Screen name="login" options={{ headerShown: false }} />
-        <Stack.Screen name="index" options={{ headerShown: false }} />
-        <Stack.Screen name="local-setup" options={{ title: 'Local Game' }} />
-        <Stack.Screen name="host" options={{ title: 'Game Board' }} />
-        <Stack.Screen name="player" options={{ title: 'My Ticket' }} />
-        
-        {/* 3. Changed modal animations to 'slide_from_bottom'. It pairs natively with 'modal' presentation without glitching. */}
-        <Stack.Screen name="scoreboard" options={{ title: 'Scoreboard', presentation: 'modal', animation: 'slide_from_bottom' }} />
-        
-        <Stack.Screen name="multiplayer" options={{ title: 'Multiplayer' }} />
-        <Stack.Screen name="lobby" options={{ title: 'Lobby', headerBackVisible: false }} />
-        <Stack.Screen name="mp-host" options={{ title: 'Host Board', headerBackVisible: false }} />
-        <Stack.Screen name="mp-player" options={{ title: 'My Ticket' }} />
-        
-        <Stack.Screen name="history" options={{ title: 'Game History', presentation: 'modal', animation: 'slide_from_bottom' }} />
-        <Stack.Screen name="history-detail" options={{ title: 'Game Details' }} />
-        <Stack.Screen name="leaderboard" options={{ title: 'Leaderboard', presentation: 'modal', animation: 'slide_from_bottom' }} />
-        <Stack.Screen name="wallet" options={{ title: 'Wallet', presentation: 'modal', animation: 'slide_from_bottom' }} />
-        <Stack.Screen name="profile" options={{ title: 'Profile', presentation: 'modal', animation: 'slide_from_bottom' }} />
+        <Stack.Screen name="login" />
+        <Stack.Screen name="index" />
+        <Stack.Screen name="local-setup" />
+        <Stack.Screen name="host" />
+        <Stack.Screen name="player" />
+        <Stack.Screen name="scoreboard" options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
+        <Stack.Screen name="multiplayer" />
+        <Stack.Screen name="lobby" />
+        <Stack.Screen name="mp-host" />
+        <Stack.Screen name="mp-player" />
+        <Stack.Screen name="history" options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
+        <Stack.Screen name="history-detail" />
+        <Stack.Screen name="leaderboard" options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
+        <Stack.Screen name="wallet" options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
+        <Stack.Screen name="profile" options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
       </Stack>
     </>
   );

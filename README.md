@@ -129,6 +129,28 @@ npm install
 npx expo start
 ```
 
+### Clickable WhatsApp Invite Links
+Use this setup to share a tappable HTTPS invite link that opens the app and joins room.
+
+1. Install Firebase CLI and login:
+```bash
+npm i -g firebase-tools
+firebase login
+```
+2. Deploy hosting files in this repo:
+```bash
+npm run hosting:deploy
+```
+3. (Optional) Override invite domain with environment variable:
+```bash
+EXPO_PUBLIC_INVITE_BASE_URL=https://housie-155ea.web.app
+```
+4. For verified Android App Links, replace placeholder SHA in [hosting/.well-known/assetlinks.json](hosting/.well-known/assetlinks.json) and redeploy.
+5. For iOS Universal Links, replace placeholder Apple Team ID in [hosting/.well-known/apple-app-site-association](hosting/.well-known/apple-app-site-association) and redeploy.
+
+After deploy, share links like:
+`https://housie-155ea.web.app/multiplayer?room=ABCD&autoJoin=1`
+
 ### Firebase Setup
 1. Create a Firebase project at [console.firebase.google.com](https://console.firebase.google.com)
 2. Enable Realtime Database

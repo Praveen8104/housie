@@ -8,7 +8,7 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as Linking from 'expo-linking';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -17,51 +17,90 @@ import { useThemedStyles } from '../src/hooks/useStyles';
 import { createRoom, joinRoom } from '../src/firebase/roomService';
 import { useAuth } from '../src/store/AuthContext';
 import GameAlert from '../src/components/GameAlert';
+import ScreenHeader from '../src/components/ScreenHeader';
 import { useGameAlert } from '../src/hooks/useGameAlert';
+
+function firstParamValue(value: string | string[] | undefined): string {
+  if (Array.isArray(value)) return value[0] || '';
+  return value || '';
+}
+
+function isAutoJoinEnabled(value: string): boolean {
+  const normalized = value.trim().toLowerCase();
+  return normalized === '1' || normalized === 'true' || normalized === 'yes';
+}
 
 export default function MultiplayerScreen() {
   const { colors } = useTheme();
   const styles = useThemedStyles(makeStyles);
   const router = useRouter();
+  const params = useLocalSearchParams<Record<string, string | string[] | undefined>>();
   const { user } = useAuth();
   const playerName = user?.name || '';
   const [roomCode, setRoomCode] = useState('');
   const [ticketPrice, setTicketPrice] = useState('');
   const [loading, setLoading] = useState(false);
+  const [autoJoinRequested, setAutoJoinRequested] = useState(false);
   const { alertState, showAlert, hideAlert } = useGameAlert();
   const scrollRef = useRef<ScrollView>(null);
+  const lastAutoJoinCodeRef = useRef<string | null>(null);
+
+  const applyIncomingLink = (url: string) => {
+    let linkRoom = '';
+    let autoJoin = false;
+
+    try {
+      const parsed = Linking.parse(url);
+      const qp = (parsed.queryParams || {}) as Record<string, unknown>;
+      const roomFromQuery = String(qp.room || qp.code || '').trim().toUpperCase();
+      const autoFromQuery = String(qp.autoJoin || qp.autojoin || qp.auto_join || '').trim();
+      linkRoom = roomFromQuery;
+      autoJoin = isAutoJoinEnabled(autoFromQuery);
+
+      // Fallback for app-link URLs where query params are not parsed consistently.
+      if (!linkRoom) {
+        const nativeUrl = new URL(url);
+        linkRoom = (
+          nativeUrl.searchParams.get('room') ||
+          nativeUrl.searchParams.get('code') ||
+          ''
+        ).trim().toUpperCase();
+        autoJoin = autoJoin || isAutoJoinEnabled(
+          nativeUrl.searchParams.get('autoJoin') ||
+          nativeUrl.searchParams.get('autojoin') ||
+          nativeUrl.searchParams.get('auto_join') ||
+          ''
+        );
+      }
+    } catch {}
+
+    if (linkRoom) setRoomCode(linkRoom);
+    if (autoJoin) setAutoJoinRequested(true);
+  };
 
   useEffect(() => {
     Linking.getInitialURL().then(url => {
-      if (url) {
-        const parsed = Linking.parse(url);
-        if (parsed.queryParams?.room) setRoomCode(String(parsed.queryParams.room).toUpperCase());
-      }
+      if (url) applyIncomingLink(url);
     });
     const sub = Linking.addEventListener('url', ({ url }) => {
-      const parsed = Linking.parse(url);
-      if (parsed.queryParams?.room) setRoomCode(String(parsed.queryParams.room).toUpperCase());
+      applyIncomingLink(url);
     });
     return () => sub.remove();
   }, []);
 
-  const handleCreate = async () => {
-    if (!playerName) return;
-    setLoading(true);
-    try {
-      const price = parseInt(ticketPrice) || 0;
-      const code = await createRoom(playerName, 1, price);
-      router.push(`/lobby?roomCode=${code}&playerName=${playerName}&isHost=true`);
-    } catch (err: any) {
-      showAlert('Error', err.message || 'Failed to create room.', 'error');
-    } finally {
-      setLoading(false);
-    }
-  };
+  useEffect(() => {
+    const routeRoom = firstParamValue(params.room || params.code).trim().toUpperCase();
+    if (routeRoom) setRoomCode(routeRoom);
+    const routeAutoJoin = firstParamValue(params.autoJoin || params.autojoin || params.auto_join);
+    if (isAutoJoinEnabled(routeAutoJoin)) setAutoJoinRequested(true);
+  }, [params.room, params.code, params.autoJoin, params.autojoin, params.auto_join]);
 
-  const handleJoin = async () => {
-    const code = roomCode.trim().toUpperCase();
-    if (!code || code.length !== 4) { showAlert('Enter Code', 'Enter the 4-letter room code.', 'warning'); return; }
+  const joinWithCode = async (inputCode: string) => {
+    const code = inputCode.trim().toUpperCase();
+    if (!code || code.length !== 4) {
+      showAlert('Enter Code', 'Enter the 4-letter room code.', 'warning');
+      return;
+    }
     setLoading(true);
     try {
       await joinRoom(code, playerName, 1);
@@ -73,8 +112,37 @@ export default function MultiplayerScreen() {
     }
   };
 
+  const handleCreate = async () => {
+    if (!playerName) return;
+    setLoading(true);
+    try {
+      const price = parseInt(ticketPrice) || 0;
+      const code = await createRoom(playerName, 1, price, user?.upiId);
+      router.push(`/lobby?roomCode=${code}&playerName=${playerName}&isHost=true`);
+    } catch (err: any) {
+      showAlert('Error', err.message || 'Failed to create room.', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleJoin = async () => {
+    await joinWithCode(roomCode);
+  };
+
+  useEffect(() => {
+    if (!autoJoinRequested || !playerName || loading) return;
+    const code = roomCode.trim().toUpperCase();
+    if (code.length !== 4) return;
+    if (lastAutoJoinCodeRef.current === code) return;
+
+    lastAutoJoinCodeRef.current = code;
+    joinWithCode(code);
+  }, [autoJoinRequested, roomCode, playerName, loading]);
+
   return (
     <SafeAreaView style={styles.container} edges={["top", "left", "right"]}>
+      <ScreenHeader title="Multiplayer" subtitle="Create or join a room" />
       <KeyboardAvoidingView style={styles.keyboardContainer} behavior={Platform.OS === 'ios' ? 'padding' : 'height'} keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}>
       <GameAlert {...alertState} onClose={hideAlert} />
       <ScrollView ref={scrollRef} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">

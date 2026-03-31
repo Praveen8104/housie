@@ -17,6 +17,7 @@ import { useTheme, ThemeColors } from '../src/store/ThemeContext';
 import { useThemedStyles } from '../src/hooks/useStyles';
 import { getWalletBalance } from '../src/firebase/walletService';
 import GameAlert from '../src/components/GameAlert';
+import ScreenHeader from '../src/components/ScreenHeader';
 import { useGameAlert } from '../src/hooks/useGameAlert';
 
 export default function ProfileScreen() {
@@ -85,6 +86,7 @@ export default function ProfileScreen() {
   return (
     <>
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
+    <ScreenHeader title="Profile" subtitle="Account and settings" />
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <GameAlert {...alertState} onClose={hideAlert} />
 

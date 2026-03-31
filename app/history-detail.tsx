@@ -10,6 +10,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTheme, ThemeColors } from '../src/store/ThemeContext';
 import { useThemedStyles } from '../src/hooks/useStyles';
 import { GameHistoryEntry } from '../src/utils/storage';
+import ScreenHeader from '../src/components/ScreenHeader';
 
 const CLAIM_NAMES: Record<string, string> = {
   fullHouse: 'Full House',
@@ -58,6 +59,7 @@ export default function HistoryDetailScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
+    <ScreenHeader title="Game Details" subtitle="Breakdown of one match" />
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       {/* Header */}
       <View style={styles.headerCard}>

@@ -10,6 +10,7 @@ import { useTheme, ThemeColors } from '../src/store/ThemeContext';
 import { useThemedStyles } from '../src/hooks/useStyles';
 import { getGameHistory, GameHistoryEntry } from '../src/utils/storage';
 import { Ionicons } from '@expo/vector-icons';
+import ScreenHeader from '../src/components/ScreenHeader';
 
 interface PlayerStats {
   name: string;
@@ -74,16 +75,20 @@ export default function LeaderboardScreen() {
 
   if (leaderboard.length === 0) {
     return (
-      <SafeAreaView style={[styles.container, styles.emptyContainer]} edges={['top', 'left', 'right']}>
-        <Ionicons name="trophy-outline" size={48} color={colors.textSecondary} style={{ marginBottom: 16 }} />
-        <Text style={styles.emptyTitle}>No Data Yet</Text>
-        <Text style={styles.emptyText}>Play some multiplayer games to see the leaderboard.</Text>
+      <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
+        <ScreenHeader title="Leaderboard" subtitle="Top performers across games" />
+        <View style={styles.emptyContainer}>
+          <Ionicons name="trophy-outline" size={48} color={colors.textSecondary} style={{ marginBottom: 16 }} />
+          <Text style={styles.emptyTitle}>No Data Yet</Text>
+          <Text style={styles.emptyText}>Play some multiplayer games to see the leaderboard.</Text>
+        </View>
       </SafeAreaView>
     );
   }
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
+    <ScreenHeader title="Leaderboard" subtitle="Top performers across games" />
     <ScrollView
       style={styles.container}
       contentContainerStyle={styles.content}

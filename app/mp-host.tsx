@@ -29,6 +29,7 @@ import ClaimButtons from '../src/components/ClaimButtons';
 import Confetti from '../src/components/Confetti';
 import GameAlert from '../src/components/GameAlert';
 import GameOverSummary from '../src/components/GameOverSummary';
+import ScreenHeader from '../src/components/ScreenHeader';
 import ReactionBar, { ReactionOverlay } from '../src/components/ReactionBar';
 import { CLAIM_LABELS, ClaimType } from '../src/utils/gameLogic';
 import { saveGameHistory, clearActiveSession } from '../src/utils/storage';
@@ -271,6 +272,7 @@ export default function MpHostScreen() {
 
   return (
     <SafeAreaView style={styles.outer} edges={['top', 'left', 'right']}>
+    <ScreenHeader title="Host Panel" subtitle="Manage calls and claims" />
     <Confetti visible={showConfetti} onComplete={() => setShowConfetti(false)} />
     {roomCode && <ReactionOverlay roomCode={roomCode} />}
     <GameAlert {...alertState} onClose={hideAlert} />

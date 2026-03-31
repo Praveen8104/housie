@@ -11,6 +11,7 @@ import { useAuth } from '../src/store/AuthContext';
 import { useTheme, ThemeColors } from '../src/store/ThemeContext';
 import { useThemedStyles } from '../src/hooks/useStyles';
 import { getWalletBalance, getTransactions, Transaction } from '../src/firebase/walletService';
+import ScreenHeader from '../src/components/ScreenHeader';
 
 function formatDate(ts: number): string {
   const d = new Date(ts);
@@ -62,6 +63,7 @@ export default function WalletScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
+    <ScreenHeader title="Wallet" subtitle="Balance and transactions" />
     <ScrollView
       style={styles.container}
       contentContainerStyle={styles.content}

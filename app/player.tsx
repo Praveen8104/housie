@@ -15,6 +15,7 @@ import { ClaimType, CLAIM_LABELS } from '../src/utils/gameLogic';
 import { hapticLight, hapticSuccess, hapticError } from '../src/utils/haptics';
 import Confetti from '../src/components/Confetti';
 import GameAlert from '../src/components/GameAlert';
+import ScreenHeader from '../src/components/ScreenHeader';
 import { useGameAlert } from '../src/hooks/useGameAlert';
 
 export default function PlayerScreen() {
@@ -68,6 +69,7 @@ export default function PlayerScreen() {
 
   return (
     <SafeAreaView style={styles.outerContainer} edges={['top', 'left', 'right']}>
+    <ScreenHeader title="My Ticket" subtitle="Mark called numbers and claim" />
     <Confetti visible={showConfetti} onComplete={() => setShowConfetti(false)} />
     <GameAlert {...alertState} onClose={hideAlert} />
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>

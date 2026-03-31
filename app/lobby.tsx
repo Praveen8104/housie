@@ -20,6 +20,7 @@ import { saveActiveSession } from '../src/utils/storage';
 import { useAuth } from '../src/store/AuthContext';
 import * as Linking from 'expo-linking';
 import GameAlert from '../src/components/GameAlert';
+import ScreenHeader from '../src/components/ScreenHeader';
 import { useGameAlert } from '../src/hooks/useGameAlert';
 
 const PRIZE_KEYS = ['fullHouse', 'jaldiFive', 'topLine', 'middleLine', 'bottomLine'] as const;
@@ -44,6 +45,7 @@ export default function LobbyScreen() {
   const [room, setRoom] = useState<RoomData | null>(null);
   const [priceInput, setPriceInput] = useState('');
   const [upiInput, setUpiInput] = useState('');
+  const [savingUpi, setSavingUpi] = useState(false);
   const [prizeInputs, setPrizeInputs] = useState<Record<string, string>>({});
   const isHostBool = isHost === 'true';
   const { alertState, showAlert, hideAlert } = useGameAlert();
@@ -96,13 +98,44 @@ export default function LobbyScreen() {
   };
 
   const handleShare = async () => {
-    try { await Share.share({ message: `Join my Housie game! Room code: ${roomCode}\n\nOpen in app: housie://join?room=${roomCode}` }); } catch {}
+    const code = (roomCode || '').trim().toUpperCase();
+    if (!code) return;
+    const inviteBase = (process.env.EXPO_PUBLIC_INVITE_BASE_URL || 'https://housie-155ea.web.app')
+      .trim()
+      .replace(/\/+$/, '');
+    const joinWebLink = inviteBase
+      ? `${inviteBase}/multiplayer?room=${encodeURIComponent(code)}&autoJoin=1`
+      : '';
+    const joinAppLink = `housie://multiplayer?room=${encodeURIComponent(code)}&autoJoin=1`;
+
+    try {
+      await Share.share({
+        message: [
+          'Join my Housie game!',
+          '',
+          joinWebLink ? `Tap to join: ${joinWebLink}` : `App deep link: ${joinAppLink}`,
+          joinWebLink ? `App deep link: ${joinAppLink}` : '',
+          '',
+          `Room code: ${code}`,
+        ].filter(Boolean).join('\n'),
+      });
+    } catch {}
   };
 
   const handleSaveUpiId = async () => {
-    if (!roomCode || !upiInput.trim()) return;
-    await updateHostUpiId(roomCode, upiInput.trim());
-    showAlert('Saved', 'UPI ID saved. Players can now pay you.', 'success');
+    if (!roomCode || !upiInput.trim()) {
+      showAlert('UPI Required', 'Please enter a valid UPI ID before saving.', 'warning');
+      return;
+    }
+    setSavingUpi(true);
+    try {
+      await updateHostUpiId(roomCode, upiInput.trim());
+      showAlert('Saved', 'UPI ID saved. Players can now pay you.', 'success');
+    } catch {
+      showAlert('Error', 'Could not save UPI ID. Please try again.', 'error');
+    } finally {
+      setSavingUpi(false);
+    }
   };
 
   const handlePayUpi = async () => {
@@ -165,6 +198,9 @@ export default function LobbyScreen() {
   const totalPool = totalTickets * price;
   const myPlayer = playerName ? room?.players?.[playerName] : null;
   const myTicketCount = myPlayer?.ticketCount || 1;
+  const savedUpi = (room?.hostUpiId || '').trim();
+  const draftUpi = upiInput.trim();
+  const isUpiDirty = draftUpi !== savedUpi;
 
   const handleTicketCountChange = async (count: number) => {
     if (!roomCode || !playerName) return;
@@ -181,6 +217,7 @@ export default function LobbyScreen() {
 
   return (
     <SafeAreaView style={styles.outerContainer} edges={['top', 'left', 'right']}>
+    <ScreenHeader title="Lobby" subtitle="Share code and configure game" />
     <KeyboardAvoidingView style={styles.outerContainer} behavior={Platform.OS === 'ios' ? 'padding' : 'height'} keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}>
     <ScrollView ref={scrollRef} style={styles.container} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
       <GameAlert {...alertState} onClose={hideAlert} />
@@ -263,15 +300,18 @@ export default function LobbyScreen() {
       })()}
 
       {/* 3. UPI (host enters ID / player pays) */}
-      {price > 0 && isHostBool && (
+      {isHostBool && (
         <View style={styles.card}>
           <View style={styles.sectionHeader}>
             <Ionicons name="card-outline" size={16} color={colors.accent} />
             <Text style={[styles.label, { marginBottom: 0, flex: 1 }]}>YOUR UPI ID</Text>
           </View>
-          <View style={styles.upiRow}>
+          <Text style={styles.distHint}>
+            {price > 0 ? 'Players can pay you using this UPI ID.' : 'Set your UPI ID now. It will be used once ticket price is greater than 0.'}
+          </Text>
+          <View style={styles.upiInputWrap}>
             <TextInput
-              style={[styles.priceInput, { flex: 1 }]}
+              style={styles.upiInput}
               value={upiInput}
               onChangeText={setUpiInput}
               placeholder="yourname@upi"
@@ -279,10 +319,25 @@ export default function LobbyScreen() {
               autoCapitalize="none"
               onFocus={() => setTimeout(() => scrollRef.current?.scrollTo({ y: 400, animated: true }), 300)}
             />
-            <TouchableOpacity style={styles.upiSaveBtn} onPress={handleSaveUpiId} activeOpacity={0.8}>
-              <Text style={styles.upiSaveBtnText}>Save</Text>
-            </TouchableOpacity>
           </View>
+          {isUpiDirty ? (
+            <TouchableOpacity
+              style={[styles.upiSaveBtn, (!draftUpi || savingUpi) && styles.disabledBtn]}
+              onPress={handleSaveUpiId}
+              activeOpacity={0.85}
+              disabled={!draftUpi || savingUpi}
+            >
+              <Ionicons name="save-outline" size={16} color="#fff" />
+              <Text style={styles.upiSaveBtnText}>{savingUpi ? 'Saving...' : 'Save UPI ID'}</Text>
+            </TouchableOpacity>
+          ) : (
+            !!savedUpi && (
+              <View style={styles.upiSavedRow}>
+                <Ionicons name="checkmark-circle" size={16} color={colors.success} />
+                <Text style={styles.upiSavedText}>UPI saved</Text>
+              </View>
+            )
+          )}
         </View>
       )}
 
@@ -474,9 +529,46 @@ const makeStyles = (colors: ThemeColors) => ({
   totalError: { color: colors.primary } as const,
   saveDistBtn: { backgroundColor: colors.secondary, paddingVertical: 10, borderRadius: 10, alignItems: 'center' as const, marginTop: 12 } as const,
   saveDistBtnText: { color: '#fff', fontSize: 14, fontWeight: '700' as const } as const,
-  upiRow: { flexDirection: 'row' as const, alignItems: 'center' as const, gap: 8 } as const,
-  upiSaveBtn: { backgroundColor: colors.success, paddingHorizontal: 18, paddingVertical: 12, borderRadius: 10 } as const,
-  upiSaveBtnText: { color: '#fff', fontSize: 14, fontWeight: '700' as const } as const,
+  upiInputWrap: {
+    backgroundColor: colors.empty,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: colors.border,
+    paddingHorizontal: 2,
+    marginBottom: 10,
+  } as const,
+  upiInput: {
+    backgroundColor: 'transparent' as const,
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    color: colors.text,
+    fontSize: 16,
+    fontWeight: '600' as const,
+  } as const,
+  upiSaveBtn: {
+    backgroundColor: colors.success,
+    paddingHorizontal: 18,
+    paddingVertical: 12,
+    borderRadius: 10,
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
+    gap: 8,
+  } as const,
+  upiSaveBtnText: { color: '#fff', fontSize: 14, fontWeight: '800' as const, letterSpacing: 0.4 } as const,
+  upiSavedRow: {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
+    gap: 6,
+    paddingVertical: 8,
+  } as const,
+  upiSavedText: {
+    color: colors.success,
+    fontSize: 13,
+    fontWeight: '700' as const,
+  } as const,
   payUpiBtn: { flexDirection: 'row' as const, backgroundColor: colors.secondary, paddingVertical: 12, borderRadius: 10, alignItems: 'center' as const, justifyContent: 'center' as const, gap: 6 } as const,
   payUpiBtnText: { color: '#fff', fontSize: 15, fontWeight: '700' as const } as const,
   markPaidBtn: { backgroundColor: colors.card, paddingVertical: 10, borderRadius: 10, alignItems: 'center' as const } as const,

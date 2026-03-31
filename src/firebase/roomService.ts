@@ -74,8 +74,14 @@ function safeTickets(player: RoomPlayer): (number | null)[][][] {
   return [];
 }
 
-export async function createRoom(hostName: string, ticketCount: number = 1, ticketPrice: number = 0): Promise<string> {
+export async function createRoom(
+  hostName: string,
+  ticketCount: number = 1,
+  ticketPrice: number = 0,
+  hostUpiId?: string,
+): Promise<string> {
   const roomCode = generateRoomCode();
+  const normalizedHostUpiId = hostUpiId?.trim();
   const roomData: RoomData = {
     hostName,
     status: 'waiting',
@@ -98,6 +104,7 @@ export async function createRoom(hostName: string, ticketCount: number = 1, tick
       fullHouse: null,
     },
     ticketPrice,
+    hostUpiId: normalizedHostUpiId || undefined,
     totalPool: 0,
     createdAt: Date.now(),
   };

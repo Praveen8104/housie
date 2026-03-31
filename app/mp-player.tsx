@@ -23,6 +23,7 @@ import TicketView, { PLAYER_COLORS } from '../src/components/TicketView';
 import Confetti from '../src/components/Confetti';
 import GameAlert, { getFunMessage } from '../src/components/GameAlert';
 import GameOverSummary from '../src/components/GameOverSummary';
+import ScreenHeader from '../src/components/ScreenHeader';
 import { useGameAlert } from '../src/hooks/useGameAlert';
 import ReactionBar, { ReactionOverlay } from '../src/components/ReactionBar';
 import ClaimButtons from '../src/components/ClaimButtons';
@@ -260,6 +261,7 @@ export default function MpPlayerScreen() {
 
   return (
     <SafeAreaView style={styles.outer} edges={['top', 'left', 'right']}>
+    <ScreenHeader title="My Multiplayer Ticket" subtitle="Track calls and claim prizes" />
     <Confetti visible={showConfetti} onComplete={() => setShowConfetti(false)} />
     {roomCode && <ReactionOverlay roomCode={roomCode} />}
     <GameAlert {...alertState} onClose={hideAlert} />

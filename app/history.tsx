@@ -14,6 +14,7 @@ import { getGameHistory, clearGameHistory, GameHistoryEntry } from '../src/utils
 import { CLAIM_LABELS, ClaimType } from '../src/utils/gameLogic';
 import { Ionicons } from '@expo/vector-icons';
 import GameAlert from '../src/components/GameAlert';
+import ScreenHeader from '../src/components/ScreenHeader';
 import { useGameAlert } from '../src/hooks/useGameAlert';
 
 function formatDate(dateStr: string): string {
@@ -72,18 +73,22 @@ export default function HistoryScreen() {
 
   if (history.length === 0) {
     return (
-      <SafeAreaView style={[styles.container, styles.emptyContainer]} edges={['top', 'left', 'right']}>
-        <Ionicons name="clipboard-outline" size={48} color={colors.textSecondary} style={{ marginBottom: 16 }} />
-        <Text style={styles.emptyTitle}>No Games Yet</Text>
-        <Text style={styles.emptyText}>
-          Your multiplayer game history will appear here.
-        </Text>
+      <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
+        <ScreenHeader title="Game History" subtitle="Your past multiplayer sessions" />
+        <View style={styles.emptyContainer}>
+          <Ionicons name="clipboard-outline" size={48} color={colors.textSecondary} style={{ marginBottom: 16 }} />
+          <Text style={styles.emptyTitle}>No Games Yet</Text>
+          <Text style={styles.emptyText}>
+            Your multiplayer game history will appear here.
+          </Text>
+        </View>
       </SafeAreaView>
     );
   }
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
+    <ScreenHeader title="Game History" subtitle="Your past multiplayer sessions" />
     <ScrollView
       style={styles.container}
       contentContainerStyle={styles.content}

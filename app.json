@@ -16,7 +16,12 @@
       "translucent": false
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.praveen.housie",
+      "associatedDomains": [
+        "applinks:housie-155ea.web.app",
+        "applinks:housie-155ea.firebaseapp.com"
+      ]
     },
     "android": {
       "adaptiveIcon": {
@@ -25,7 +30,29 @@
         "backgroundImage": "./assets/logo.png",
         "monochromeImage": "./assets/logo.png"
       },
-      "package": "com.praveen.housie"
+      "package": "com.praveen.housie",
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [
+            {
+              "scheme": "https",
+              "host": "housie-155ea.web.app",
+              "pathPrefix": "/multiplayer"
+            },
+            {
+              "scheme": "https",
+              "host": "housie-155ea.firebaseapp.com",
+              "pathPrefix": "/multiplayer"
+            }
+          ],
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
+        }
+      ]
     },
     "web": {
       "favicon": "./assets/logo.png",
@@ -38,14 +65,14 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "c6bb28ad-28ef-4b11-9716-db19685e1b17"
+        "projectId": "d4725ae5-4246-4a3a-b3ce-1046560439c6"
       }
-    },
-    "updates": {
-      "url": "https://u.expo.dev/c6bb28ad-28ef-4b11-9716-db19685e1b17"
     },
     "runtimeVersion": {
       "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/d4725ae5-4246-4a3a-b3ce-1046560439c6"
     }
   }
 }

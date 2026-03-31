@@ -15,6 +15,7 @@ import { useThemedStyles } from '../src/hooks/useStyles';
 import { hapticHeavy } from '../src/utils/haptics';
 import { Ionicons } from '@expo/vector-icons';
 import GameAlert from '../src/components/GameAlert';
+import ScreenHeader from '../src/components/ScreenHeader';
 import { useGameAlert } from '../src/hooks/useGameAlert';
 
 export default function HostScreen() {
@@ -47,6 +48,7 @@ export default function HostScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
+    <ScreenHeader title="Host Board" subtitle="Draw and monitor the game" />
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <GameAlert {...alertState} onClose={hideAlert} />
       {/* Current Number Display */}

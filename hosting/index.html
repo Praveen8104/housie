@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Join Housie Room</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --bg: #f5f7fb;
+        --card: #ffffff;
+        --text: #152238;
+        --muted: #5c6780;
+        --primary: #1c7ed6;
+        --primary-dark: #1864ab;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        background: radial-gradient(circle at top left, #e8f2ff, var(--bg));
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        color: var(--text);
+        padding: 20px;
+      }
+      .card {
+        width: 100%;
+        max-width: 480px;
+        background: var(--card);
+        border-radius: 16px;
+        box-shadow: 0 10px 35px rgba(21, 34, 56, 0.12);
+        padding: 24px;
+      }
+      h1 {
+        margin: 0 0 10px;
+        font-size: 24px;
+      }
+      p {
+        margin: 0 0 14px;
+        color: var(--muted);
+        line-height: 1.45;
+      }
+      .code {
+        display: inline-block;
+        margin: 8px 0 14px;
+        padding: 8px 12px;
+        border-radius: 10px;
+        background: #eef5ff;
+        color: #0f4c81;
+        letter-spacing: 1px;
+        font-weight: 700;
+      }
+      .cta {
+        width: 100%;
+        border: 0;
+        border-radius: 12px;
+        padding: 14px 16px;
+        background: var(--primary);
+        color: #fff;
+        font-size: 16px;
+        font-weight: 700;
+        cursor: pointer;
+      }
+      .cta:hover { background: var(--primary-dark); }
+      .small {
+        margin-top: 10px;
+        font-size: 13px;
+      }
+      .hint {
+        margin-top: 16px;
+        font-size: 12px;
+      }
+      a { color: var(--primary-dark); }
+    </style>
+  </head>
+  <body>
+    <main class="card">
+      <h1>Join Housie Game</h1>
+      <p id="status">Opening the app...</p>
+      <div id="code" class="code" hidden></div>
+      <button id="openBtn" class="cta" hidden>Open in App</button>
+      <p class="small" id="fallback" hidden>
+        App did not open? Copy the room code and join from Multiplayer screen.
+      </p>
+      <p class="hint">
+        Need the app? <a href="https://expo.dev/artifacts/eas" target="_blank" rel="noreferrer">Install latest build</a>
+      </p>
+    </main>
+
+    <script>
+      (function () {
+        var params = new URLSearchParams(window.location.search);
+        var room = (params.get('room') || '').toUpperCase().trim();
+        var autoJoin = params.get('autoJoin') === '1' ? '1' : '0';
+        var deepLink = 'housie://multiplayer?room=' + encodeURIComponent(room) + '&autoJoin=' + autoJoin;
+
+        var statusEl = document.getElementById('status');
+        var codeEl = document.getElementById('code');
+        var openBtn = document.getElementById('openBtn');
+        var fallbackEl = document.getElementById('fallback');
+
+        if (room) {
+          codeEl.textContent = 'Room code: ' + room;
+          codeEl.hidden = false;
+        }
+
+        openBtn.hidden = false;
+        openBtn.addEventListener('click', function () {
+          window.location.href = deepLink;
+        });
+
+        setTimeout(function () {
+          window.location.href = deepLink;
+        }, 300);
+
+        setTimeout(function () {
+          statusEl.textContent = 'Tap the button below if the app did not open.';
+          fallbackEl.hidden = false;
+        }, 1800);
+      })();
+    </script>
+  </body>
+</html>

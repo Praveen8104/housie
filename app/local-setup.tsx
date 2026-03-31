@@ -15,6 +15,7 @@ import { useGame } from '../src/store/GameContext';
 import { useTheme, ThemeColors } from '../src/store/ThemeContext';
 import { useThemedStyles } from '../src/hooks/useStyles';
 import GameAlert from '../src/components/GameAlert';
+import ScreenHeader from '../src/components/ScreenHeader';
 import { useGameAlert } from '../src/hooks/useGameAlert';
 
 export default function LocalSetupScreen() {
@@ -56,6 +57,7 @@ export default function LocalSetupScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
+    <ScreenHeader title="Local Setup" subtitle="Add players on this device" />
     <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <GameAlert {...alertState} onClose={hideAlert} />
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">

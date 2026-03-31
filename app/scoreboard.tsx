@@ -11,6 +11,7 @@ import { useGame } from '../src/store/GameContext';
 import { useTheme, ThemeColors } from '../src/store/ThemeContext';
 import { useThemedStyles } from '../src/hooks/useStyles';
 import { CLAIM_LABELS, ClaimType } from '../src/utils/gameLogic';
+import ScreenHeader from '../src/components/ScreenHeader';
 import { Ionicons } from '@expo/vector-icons';
 
 const CLAIM_ORDER: ClaimType[] = ['fullHouse', 'jaldiFive', 'topLine', 'middleLine', 'bottomLine'];
@@ -30,6 +31,7 @@ export default function ScoreboardScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
+    <ScreenHeader title="Scoreboard" subtitle="Winners and game summary" />
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <Text style={styles.title}>
         {state.gameOver ? 'Game Over!' : 'Scoreboard'}

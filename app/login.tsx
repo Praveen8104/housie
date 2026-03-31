@@ -15,6 +15,7 @@ import { useAuth } from '../src/store/AuthContext';
 import { useTheme, ThemeColors } from '../src/store/ThemeContext';
 import { useThemedStyles } from '../src/hooks/useStyles';
 import GameAlert from '../src/components/GameAlert';
+import ScreenHeader from '../src/components/ScreenHeader';
 import { useGameAlert } from '../src/hooks/useGameAlert';
 
 export default function LoginScreen() {
@@ -63,6 +64,7 @@ export default function LoginScreen() {
 
   return (
     <SafeAreaView style={styles.safe} edges={['top', 'left', 'right']}>
+      <ScreenHeader title="Welcome" subtitle="Login or create an account" hideBack />
       <GameAlert {...alertState} onClose={hideAlert} />
       <KeyboardAvoidingView
         style={styles.container}
