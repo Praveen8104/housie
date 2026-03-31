@@ -63,7 +63,7 @@ export default function HomeScreen() {
               <Text style={styles.profileInitial}>{user?.name?.charAt(0)?.toUpperCase() || '?'}</Text>
             </View>
             <View>
-              <Text style={[styles.greeting, { color: colors.textSecondary }]}>Hey,</Text>
+              <Text style={[styles.greeting, { color: colors.textSecondary }]}>Hello,</Text>
               <Text style={[styles.profileName, { color: colors.text }]}>{user?.name || 'Player'}</Text>
             </View>
           </TouchableOpacity>
